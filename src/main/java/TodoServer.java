@@ -27,28 +27,30 @@ public class TodoServer {
 
 			while (true) {
 
-				Socket clientSocket = serverSocket.accept();
-				PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-				BufferedReader in = new BufferedReader(
-					new InputStreamReader(clientSocket.getInputStream()));
-				String input = in.readLine();
+				try (
+					Socket clientSocket = serverSocket.accept();
+					PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+					BufferedReader in = new BufferedReader(
+						new InputStreamReader(clientSocket.getInputStream()))) {
 
-				List<PageEntry> pageEntries = engine.search(input);
-				if (pageEntries != null) {
-					Gson gson = new GsonBuilder()
-						.setPrettyPrinting()
-						.create();
-					Type listType = new TypeToken<List<PageEntry>>() {
-					}.getType();
-					out.println(gson.toJson(pageEntries, listType));
-				} else {
-					String notWord = "The word is not found!";
-					out.println(notWord);
+					String input = in.readLine();
+
+					List<PageEntry> pageEntries = engine.search(input);
+					if (pageEntries != null) {
+						Gson gson = new GsonBuilder()
+							.setPrettyPrinting()
+							.create();
+						Type listType = new TypeToken<List<PageEntry>>() {
+						}.getType();
+						out.println(gson.toJson(pageEntries, listType));
+					} else {
+						String notWord = "The word is not found!";
+						out.println(notWord);
+					}
 				}
-				in.close();
-				out.close();
 			}
 		} catch (Error e) {
+			System.out.println("Не могу стартовать сервер");
 			e.printStackTrace();
 		}
 	}
